@@ -11,7 +11,7 @@ ChartRenderer::ChartRenderer(QWidget* parent)
 }
 
 void ChartRenderer::renderCharts(const std::unordered_map<std::string, Stock>& stocks) {
-    chart->removeAllSeries(); // Clear previous data
+    chart->removeAllSeries();
 
     for (const auto& [symbol, stock] : stocks) {
         QLineSeries* series = new QLineSeries();
@@ -23,7 +23,6 @@ void ChartRenderer::renderCharts(const std::unordered_map<std::string, Stock>& s
 
         chart->addSeries(series);
 
-        // Configure axes
         QValueAxis* axisX = new QValueAxis();
         axisX->setTitleText("Time (Days)");
         axisX->setLabelFormat("%d");
