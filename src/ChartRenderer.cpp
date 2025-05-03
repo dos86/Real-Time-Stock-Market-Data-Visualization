@@ -1,18 +1,41 @@
 #include "ChartRenderer.hpp"
-#include <iostream>
+#include <QtCharts/QLineSeries>
+#include <QtCharts/QValueAxis>
 
-void ChartRenderer::renderCharts(const std::unordered_map<std::string, Stock>& stocks) {
-    for (const auto& [symbol, stock] : stocks) {
-        renderLineChart(stock);
-    }
+ChartRenderer::ChartRenderer(QWidget* parent)
+    : QChartView(new QChart(), parent) {
+    chart = this->chart();
+    chart->setTitle("Real-Time Stock Market Visualization");
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
 }
 
-void ChartRenderer::renderLineChart(const Stock& stock) {
-    std::cout << "Rendering line chart for stock: " << stock.symbol << "\n";
-    for (size_t i = 0; i < stock.prices.size(); ++i) {
-        std::cout << "Day " << i + 1 << ": Price = " << stock.prices[i]
-                  << ", MA = " << (i < stock.movingAvg.size() ? stock.movingAvg[i] : 0)
-                  << ", RSI = " << (i < stock.rsi.size() ? stock.rsi[i] : 0)
-                  << ", MACD = " << (i < stock.macd.size() ? stock.macd[i] : 0) << "\n";
+void ChartRenderer::renderCharts(const std::unordered_map<std::string, Stock>& stocks) {
+    chart->removeAllSeries(); // Clear previous data
+
+    for (const auto& [symbol, stock] : stocks) {
+        QLineSeries* series = new QLineSeries();
+        series->setName(QString::fromStdString(symbol));
+
+        for (size_t i = 0; i < stock.prices.size(); ++i) {
+            series->append(i, stock.prices[i]);
+        }
+
+        chart->addSeries(series);
+
+        // Configure axes
+        QValueAxis* axisX = new QValueAxis();
+        axisX->setTitleText("Time (Days)");
+        axisX->setLabelFormat("%d");
+
+        QValueAxis* axisY = new QValueAxis();
+        axisY->setTitleText("Price ($)");
+        axisY->setLabelFormat("%.2f");
+
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
     }
 }
