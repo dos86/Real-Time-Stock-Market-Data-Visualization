@@ -1,30 +1,25 @@
-#include <iostream>
+#include <QApplication>
 #include "include/StockMarket.hpp"
 #include "include/ChartRenderer.hpp"
-#include "include/Logger.hpp"
 
-int main() {
-    try {
-        StockMarket stockMarket;
-        ChartRenderer renderer;
-        Logger logger("stock_data_log.txt");
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
 
-        stockMarket.addStock("AAPL");
-        stockMarket.addStock("MSFT");
-        stockMarket.addStock("GOOG");
+    StockMarket stockMarket;
+    ChartRenderer renderer;
 
-        stockMarket.start();
+    stockMarket.addStock("AAPL");
+    stockMarket.addStock("MSFT");
+    stockMarket.addStock("GOOG");
 
-        while (true) {
-            std::this_thread::sleep_for(std::chrono::seconds(5));
-            renderer.renderCharts(stockMarket.getStocks());
-            logger.logStockData(stockMarket.getStocks());
-        }
+    stockMarket.start();
 
-        stockMarket.stop();
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-    }
+    QObject::connect(&stockMarket, &StockMarket::dataUpdated, [&renderer, &stockMarket]() {
+        renderer.renderCharts(stockMarket.getStocks());
+    });
 
-    return 0;
+    renderer.resize(800, 600);
+    renderer.show();
+
+    return app.exec();
 }
